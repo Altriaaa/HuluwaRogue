@@ -1,0 +1,17 @@
+Effect.png
+size:512,128
+repeat:none
+bullet
+bounds:54,32,26,20
+coin
+bounds:218,69,55,55
+evilball
+bounds:275,79,45,45
+ghost
+bounds:2,54,70,70
+magicball
+bounds:2,2,50,50
+obstacle
+bounds:74,54,70,70
+square
+bounds:146,54,70,70

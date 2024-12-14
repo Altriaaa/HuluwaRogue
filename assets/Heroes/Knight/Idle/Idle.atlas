@@ -1,0 +1,47 @@
+Idle.png
+size: 300, 100
+format: RGBA8888
+filter: Nearest,Linear
+repeat: none
+Soldier_Idle
+  rotate: false
+  xy: 0,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 0
+Soldier_Idle
+  rotate: false
+  xy: 0,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 1
+Soldier_Idle
+  rotate: false
+  xy: 100,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 2
+Soldier_Idle
+  rotate: false
+  xy: 100,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 3
+Soldier_Idle
+  rotate: false
+  xy: 200,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 4
+Soldier_Idle
+  rotate: false
+  xy: 200,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 5

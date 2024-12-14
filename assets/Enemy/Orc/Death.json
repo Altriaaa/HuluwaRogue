@@ -1,0 +1,62 @@
+{ "frames": [
+   {
+    "filename": "Orc #Death 0.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 100, "h": 100 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 100, "h": 100 },
+    "sourceSize": { "w": 100, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "Orc #Death 1.aseprite",
+    "frame": { "x": 100, "y": 0, "w": 100, "h": 100 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 100, "h": 100 },
+    "sourceSize": { "w": 100, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "Orc #Death 2.aseprite",
+    "frame": { "x": 200, "y": 0, "w": 100, "h": 100 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 100, "h": 100 },
+    "sourceSize": { "w": 100, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "Orc #Death 3.aseprite",
+    "frame": { "x": 300, "y": 0, "w": 100, "h": 100 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 100, "h": 100 },
+    "sourceSize": { "w": 100, "h": 100 },
+    "duration": 600
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.9.1-trial",
+  "image": "Death.png",
+  "format": "RGBA8888",
+  "size": { "w": 400, "h": 100 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "idle", "from": 0, "to": 5, "direction": "forward", "repeat": "2", "color": "#000000ff" },
+   { "name": "walk", "from": 6, "to": 13, "direction": "forward", "repeat": "2", "color": "#000000ff" },
+   { "name": "attack01", "from": 14, "to": 19, "direction": "forward", "repeat": "2", "color": "#000000ff" },
+   { "name": "attack02", "from": 20, "to": 25, "direction": "forward", "repeat": "2", "color": "#000000ff" },
+   { "name": "hurt", "from": 26, "to": 29, "direction": "forward", "repeat": "2", "color": "#000000ff" },
+   { "name": "Death", "from": 30, "to": 33, "direction": "forward", "repeat": "2", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "shadow", "opacity": 255, "blendMode": "normal" },
+   { "name": "main", "opacity": 255, "blendMode": "normal" },
+   { "name": "effect", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

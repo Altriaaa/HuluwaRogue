@@ -1,0 +1,47 @@
+Attack.png
+size: 600, 100
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Attack_Idle
+  rotate: false
+  xy: 0,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 0
+Attack_Idle
+  rotate: false
+  xy: 100,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 1
+Attack_Idle
+  rotate: false
+  xy: 200,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 2
+Attack_Idle
+  rotate: false
+  xy: 300,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 3
+Attack_Idle
+  rotate: false
+  xy: 400,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 4
+Attack_Idle
+  rotate: false
+  xy: 500,0
+  size: 100,100
+  orig: 100,100
+  offset: 0,0
+  index: 5
