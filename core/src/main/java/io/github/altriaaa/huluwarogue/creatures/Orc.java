@@ -1,5 +1,6 @@
 package io.github.altriaaa.huluwarogue.creatures;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -8,8 +9,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
 import io.github.altriaaa.huluwarogue.GameScreen;
+import io.github.altriaaa.huluwarogue.GameWorld;
 import io.github.altriaaa.huluwarogue.Main;
 import io.github.altriaaa.huluwarogue.ResourceManager;
 
@@ -18,32 +22,65 @@ import java.util.concurrent.Executors;
 
 public class Orc extends Creature
 {
-    GameScreen gameScreen;
     private float targetX;
     private float targetY;
     private ExecutorService executorService; // 线程池，用于管理每个 Orc 的线程
 
-    public Orc(final Main game, GameScreen gameScreen)
+    public Orc()
     {
-        this.gameScreen = gameScreen;
-
         healthLim = 20;
         health = healthLim;
         damage = 3;
 
-        ResourceManager resourceManager = game.resourceManager;
+        ResourceManager resourceManager = ResourceManager.getInstance();
         idleAnimation = resourceManager.createAnimation("orc_idle", 0.1f, Animation.PlayMode.LOOP);
         walkAnimation = resourceManager.createAnimation("orc_run", 0.1f, Animation.PlayMode.LOOP);
         attackAnimation = resourceManager.createAnimation("orc_attack", 0.1f, Animation.PlayMode.LOOP);
         deathAnimation = resourceManager.createAnimation("orc_death", 0.1f, Animation.PlayMode.LOOP);
 
         speed = 64;
-        boundingBox = new Rectangle();
-        atkBox = new Rectangle();
         targetX = 0;
         targetY = 0;
         executorService = Executors.newSingleThreadExecutor();
         startBehavior();
+    }
+
+    @Override
+    public void write(Json json)
+    {
+        super.write(json);
+    }
+
+    @Override
+    public void read(Json json, JsonValue jsonData)
+    {
+        super.read(json, jsonData);
+    }
+
+    @Override
+    public void vulDamage(float d)
+    {
+        health -= d;
+        if(health <= 0)
+        {
+            setState(CharacterState.DYING);
+//            Json json = new Json();
+//            String jsonData = json.toJson(this);
+//            System.out.println("Serialized: " + jsonData);
+//            Orc deserializedCreature = json.fromJson(Orc.class, jsonData);
+//            deserializedCreature.setPosition(100,100);
+//            deserializedCreature.setSize(getWidth(), getHeight());
+//            deserializedCreature.health = 100;
+//            GameWorld.getInstance().getStage().addActor(deserializedCreature);
+//            System.out.println("Deserialized Health: " + deserializedCreature.getHealth());
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run()
+                {
+                    remove();
+                }
+            }, deathAnimation.getAnimationDuration());
+        }
     }
 
     private void startBehavior()
@@ -54,8 +91,8 @@ public class Orc extends Creature
             {
                 try
                 {
-                    float newX = gameScreen.getKnight().getX();
-                    float newY = gameScreen.getKnight().getY();
+                    float newX = GameWorld.getInstance().getKnight().getX();
+                    float newY = GameWorld.getInstance().getKnight().getY();
                     // 将计算结果提交到主线程更新
                     Gdx.app.postRunnable(() -> {
                         targetX = newX;
@@ -72,7 +109,6 @@ public class Orc extends Creature
         });
     }
 
-
     @Override
     public void setBox()
     {
@@ -87,7 +123,6 @@ public class Orc extends Creature
         // 在主线程中处理移动逻辑
         if (targetX != getX() || targetY != getY())
         {
-//            System.out.println(targetX + "  " + targetY);
             float deltaX = targetX - getX();
             float deltaY = targetY - getY();
             float distance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -137,7 +172,6 @@ public class Orc extends Creature
     @Override
     public boolean remove()
     {
-//        System.out.println("into");
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdownNow();
         }

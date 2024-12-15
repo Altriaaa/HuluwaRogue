@@ -5,6 +5,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.io.IOException;
+
 /** First screen of the application. Displayed after the application is created. */
 public class FirstScreen implements Screen
 {
@@ -32,7 +34,13 @@ public class FirstScreen implements Screen
 
         if(Gdx.input.isTouched())
         {
-            game.setScreen(new GameScreen(game));
+            try
+            {
+                game.setScreen(new GameScreen(game));
+            } catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
             dispose();
         }
     }
@@ -40,7 +48,7 @@ public class FirstScreen implements Screen
     @Override
     public void resize(int width, int height) {
         // Resize your screen here. The parameters represent the new window size.
-        game.viewport.update(width, height, true);
+//        game.viewport.update(width, height, true);
     }
 
     @Override

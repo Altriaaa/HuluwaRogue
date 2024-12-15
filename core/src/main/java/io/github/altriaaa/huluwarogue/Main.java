@@ -12,15 +12,12 @@ public class Main extends Game
 {
     public SpriteBatch batch;
     public FitViewport viewport;
-    public  ResourceManager resourceManager;
 
     @Override
     public void create()
     {
         batch = new SpriteBatch();
         viewport = new FitViewport(1260, 910);
-        resourceManager = ResourceManager.getInstance();
-
         this.setScreen(new FirstScreen(this));
     }
 
@@ -32,7 +29,7 @@ public class Main extends Game
     public void dispose()
     {
         batch.dispose();
-        resourceManager.dispose();
+        ResourceManager.getInstance().dispose();
         this.getScreen().dispose();
     }
 }

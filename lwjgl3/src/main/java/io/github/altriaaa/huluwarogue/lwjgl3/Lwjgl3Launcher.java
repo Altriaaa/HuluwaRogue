@@ -15,7 +15,7 @@ public class Lwjgl3Launcher {
         return new Lwjgl3Application(new Main(), getDefaultConfiguration());
     }
 
-    private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
+    public static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("HuluwaRogue");
         //// Vsync limits the frames per second to what your hardware can display, and helps eliminate
