@@ -91,7 +91,8 @@ public class GameServer
 
     public void broadcastMessage(String message) throws IOException
     {
-        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
+        String delimitedMessage = message + "\n"; // 使用换行符作为分隔符
+        ByteBuffer buffer = ByteBuffer.wrap(delimitedMessage.getBytes());
         for (SelectionKey key : selector.keys())
         {
             if (key.channel() instanceof SocketChannel && key.isValid())

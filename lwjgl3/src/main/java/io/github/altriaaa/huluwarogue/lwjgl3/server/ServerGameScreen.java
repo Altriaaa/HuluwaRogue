@@ -58,6 +58,7 @@ public class ServerGameScreen implements Screen
         try
         {
             server.broadcastMessage(jsondata);
+//            System.out.println("Server sends: " + jsondata);
         } catch (IOException e)
         {
             e.printStackTrace();

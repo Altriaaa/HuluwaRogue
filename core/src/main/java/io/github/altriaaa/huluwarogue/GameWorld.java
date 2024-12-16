@@ -23,7 +23,6 @@ public class GameWorld
     Array<Obstacle> obstacles;
 
     private static final float FIXED_DELTA_TIME = 1 / 60f;
-    //    float delta;
     float genEnemyTimer;
     float atkDtcTimer;
     private boolean running;
@@ -103,7 +102,7 @@ public class GameWorld
     public void createEnemy(float delta)
     {
         genEnemyTimer += delta;
-        if (genEnemyTimer > 5.0f)
+        if (genEnemyTimer > 100.0f)
         {
             genEnemyTimer = 0;
             Orc orc = (Orc) createCreature(new OrcFactory());
@@ -126,6 +125,16 @@ public class GameWorld
     public Stage getStage()
     {
         return stage;
+    }
+
+    public void setKnight(Knight knight)
+    {
+        knight.setSize(this.knight.getWidth(), this.knight.getHeight());
+        knight.setOrigin(this.knight.getOriginX(), this.knight.getOriginY());
+        knight.setScale(this.knight.getScaleX(), this.knight.getScaleY());
+        this.knight.remove();
+        this.knight = knight;
+        stage.addActor(this.knight);
     }
 
     public Knight getKnight()

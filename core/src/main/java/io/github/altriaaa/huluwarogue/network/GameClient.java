@@ -10,6 +10,9 @@ public class GameClient
 {
     private Selector selector;
     private SocketChannel socketChannel;
+    private MessageListener messageListener;
+    private StringBuilder messageBuffer = new StringBuilder(); // 缓冲区，用于存储未处理的消息
+
 
     public GameClient(String host, int port) throws IOException
     {
@@ -17,6 +20,16 @@ public class GameClient
         socketChannel = SocketChannel.open(new InetSocketAddress(host, port));
         socketChannel.configureBlocking(false);
         socketChannel.register(selector, SelectionKey.OP_READ);
+    }
+
+    public interface MessageListener
+    {
+        void onMessageReceived(String message);
+    }
+
+    public void setMessageListener(MessageListener listener)
+    {
+        this.messageListener = listener;
     }
 
     public void start() throws IOException
@@ -54,10 +67,34 @@ public class GameClient
         }
         // 处理接收到的数据
         buffer.flip();
-        // 示例：打印接收到的数据
-        byte[] data = new byte[buffer.remaining()];
-        buffer.get(data);
-        System.out.println(new String(data));
+        while (buffer.hasRemaining())
+        {
+            char c = (char) buffer.get(); // 逐字节读取
+            messageBuffer.append(c); // 追加到缓冲区
+        }
+        String messages = messageBuffer.toString();
+        int lastIndex;
+        while ((lastIndex = messages.indexOf("\n")) != -1)
+        { // 寻找第一个完整消息
+            String completeMessage = messages.substring(0, lastIndex); // 提取完整消息
+            messages = messages.substring(lastIndex + 1); // 剩下的未处理部分
+            try
+            {
+                if (messageListener != null)
+                {
+                    messageListener.onMessageReceived(completeMessage);
+                }
+            } catch (Exception e)
+            {
+                System.err.println("Error parsing message: " + completeMessage);
+                e.printStackTrace();
+            }
+        }
+
+        // 将剩余的未处理部分重新存入缓冲区
+        messageBuffer.setLength(0);
+        messageBuffer.append(messages);
+//        buffer.compact(); // 压缩缓冲区，保留未处理的数据
     }
 
     public static void main(String[] args) throws IOException

@@ -18,7 +18,7 @@ import io.github.altriaaa.huluwarogue.tiles.Square;
 import java.io.IOException;
 import java.util.Random;
 
-public class GameScreen implements Screen
+public class GameScreen implements Screen, GameClient.MessageListener
 {
     final Main game;
     GameWorld world;
@@ -29,7 +29,8 @@ public class GameScreen implements Screen
         this.game = game;
 
         client = new GameClient("localhost", 12345);
-        // 启动 GameServer 在一个单独的线程中运行
+        client.setMessageListener(this);
+        // 启动 GameClient 在一个单独的线程中运行
         Thread clientThread = new Thread(() ->
         {
             try
@@ -44,10 +45,21 @@ public class GameScreen implements Screen
         clientThread.start();
 
         world = GameWorld.getInstance();
-
         world.assetInit();
         world.worldInit();
 //        world.run();
+    }
+
+    @Override
+    public void onMessageReceived(String message)
+    {
+        Gdx.app.postRunnable(()->
+        {
+//            System.out.println("Message from server: " + message);
+            Json json = new Json();
+            Knight knight = json.fromJson(Knight.class, message);
+            world.setKnight(knight);
+        });
     }
 
     @Override
@@ -67,6 +79,7 @@ public class GameScreen implements Screen
     {
         ScreenUtils.clear(Color.BLACK);
 //        world.update(delta);
+//        System.out.println(world.getKnight().getState());
         world.getStage().draw();
     }
 

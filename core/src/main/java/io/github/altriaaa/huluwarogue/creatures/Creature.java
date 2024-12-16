@@ -57,6 +57,8 @@ public abstract class Creature extends Actor implements Json.Serializable
         json.writeValue("stateTime", stateTime);
         json.writeValue("boundingBox", boundingBox);
         json.writeValue("atkBox", atkBox);
+        json.writeValue("x", getX());
+        json.writeValue("y", getY());
     }
 
     @Override
@@ -70,6 +72,7 @@ public abstract class Creature extends Actor implements Json.Serializable
         stateTime = json.readValue("stateTime", Float.class, jsonData);
         boundingBox = json.readValue("boundingBox", Rectangle.class, jsonData);
         atkBox = json.readValue("atkBox", Rectangle.class, jsonData);
+        setPosition(json.readValue("x", Float.class, jsonData), json.readValue("y", Float.class, jsonData));
     }
 
     public float getDamage(){
