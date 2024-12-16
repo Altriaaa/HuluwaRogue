@@ -1,33 +1,32 @@
-# HuluwaRogue
+[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/RIFOjVy2)
+# j05
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+请将j04的迷宫任务改造为一个ruguelike（或其他风格）的对战游戏（不限于葫芦娃主题）。下图供参考。
 
-This project was generated with a template including simple application launchers and a main class extending `Game` that sets the first screen.
+![](0.webp)
 
-## Platforms
+**游戏构思和实现请发挥想象力**，具体需求如下：
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+- **并发**：用多线程实现游戏中生物体的自主行为
+  - 每个生物体的移动、攻击等行为决策可使用Minimax或其他算法（可参考https://www.baeldung.com/java-minimax-algorithm）
+  - 请特别注意线程race condition（两个生物体不能占据同一个tile，对同一生物体的两个攻击行为应该先后发生作用，等）
+  - **完成后录屏发小破站**
+- **构建**：支持项目自动化构建
+  - 使用maven进行所有第三方库的依赖管理和构建
+  - **在github actions中运行构建过程**
+- **测试**：编写junit单元测试用例
+  - 代码测试覆盖率不低于50%（vscode请使用Coverage Gutters扩展，intellij IDEA请run with coverage）
+  - **在github actions中运行测试过程**
+- **IO**：提供游戏保存功能
+  - 地图保存/地图加载
+  - 进度保存/进度恢复
+  - 游戏过程录制/回放
+  - **完成后录屏发小破站**
+- **网络通信**：支持网络对战
+  - 支持多方（大于两方）对战
+  - 要求使用NIO Selector实现
+  - 要求通信过程全局状态一致（所有玩家看到的游戏过程完全一样），可通过各方分别录制游戏过程后进行比对验证
+  - **完成后录屏发小破站**
 
-## Gradle
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
-
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
