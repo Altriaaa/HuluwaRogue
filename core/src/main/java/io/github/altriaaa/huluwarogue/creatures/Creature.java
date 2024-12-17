@@ -11,8 +11,12 @@ import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
 
+import java.util.UUID;
+
 public abstract class Creature extends Actor implements Json.Serializable
 {
+    private String id;
+
     protected float health;
     protected float damage;
     protected float healthLim;
@@ -31,6 +35,7 @@ public abstract class Creature extends Actor implements Json.Serializable
 
     public Creature()
     {
+        this.id = UUID.randomUUID().toString();
         state = CharacterState.IDLE;
         stateTime = 0f;
         shapeRenderer = new ShapeRenderer();
@@ -38,7 +43,8 @@ public abstract class Creature extends Actor implements Json.Serializable
         atkBox = new Rectangle();
     }
 
-    public enum CharacterState {
+    public enum CharacterState
+    {
         IDLE,
         WALKING,
         DYING,
@@ -49,14 +55,15 @@ public abstract class Creature extends Actor implements Json.Serializable
     @Override
     public void write(Json json)
     {
+        json.writeValue("id", id);
         json.writeValue("health", health);
-        json.writeValue("damage", damage);
-        json.writeValue("healthLim", healthLim);
-        json.writeValue("speed", speed);
+//        json.writeValue("damage", damage);
+//        json.writeValue("healthLim", healthLim);
+//        json.writeValue("speed", speed);
         json.writeValue("state", state);
         json.writeValue("stateTime", stateTime);
-        json.writeValue("boundingBox", boundingBox);
-        json.writeValue("atkBox", atkBox);
+//        json.writeValue("boundingBox", boundingBox);
+//        json.writeValue("atkBox", atkBox);
         json.writeValue("x", getX());
         json.writeValue("y", getY());
     }
@@ -64,33 +71,51 @@ public abstract class Creature extends Actor implements Json.Serializable
     @Override
     public void read(Json json, JsonValue jsonData)
     {
+        id = json.readValue("id", String.class, jsonData);
         health = json.readValue("health", Float.class, jsonData);
-        damage = json.readValue("damage", Float.class, jsonData);
-        healthLim = json.readValue("healthLim", Float.class, jsonData);
-        speed = json.readValue("speed", Float.class, jsonData);
+//        damage = json.readValue("damage", Float.class, jsonData);
+//        healthLim = json.readValue("healthLim", Float.class, jsonData);
+//        speed = json.readValue("speed", Float.class, jsonData);
         state = json.readValue("state", CharacterState.class, jsonData);
         stateTime = json.readValue("stateTime", Float.class, jsonData);
-        boundingBox = json.readValue("boundingBox", Rectangle.class, jsonData);
-        atkBox = json.readValue("atkBox", Rectangle.class, jsonData);
+//        boundingBox = json.readValue("boundingBox", Rectangle.class, jsonData);
+//        atkBox = json.readValue("atkBox", Rectangle.class, jsonData);
         setPosition(json.readValue("x", Float.class, jsonData), json.readValue("y", Float.class, jsonData));
+        setBox();
     }
 
-    public float getDamage(){
+    public void updateStat(Creature other)
+    {
+        health = other.health;
+        state = other.state;
+        stateTime = other.stateTime;
+        setPosition(other.getX(), other.getY());
+        setBox();
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public float getDamage()
+    {
         return damage;
     }
 
     public void vulDamage(float d)
     {
         health -= d;
-        if(health <= 0)
+        if (health <= 0)
         {
             setState(CharacterState.DYING);
-//            Json json = new Json();
-//            String jsonData = json.toJson(this);
-//            System.out.println("Serialized: " + jsonData);
-//            Creature deserializedCreature = json.fromJson(Creature.class, jsonData);
-//            System.out.println("Deserialized Health: " + deserializedCreature.getHealth());
-            Timer.schedule(new Timer.Task() {
+            Timer.schedule(new Timer.Task()
+            {
                 @Override
                 public void run()
                 {
@@ -100,11 +125,13 @@ public abstract class Creature extends Actor implements Json.Serializable
         }
     }
 
-    public float getHealth(){
+    public float getHealth()
+    {
         return health;
     }
 
-    public Rectangle getBoundingBox(){
+    public Rectangle getBoundingBox()
+    {
         return boundingBox;
     }
 
@@ -114,11 +141,13 @@ public abstract class Creature extends Actor implements Json.Serializable
         boundingBox.set(getX(), getY(), getWidth(), getHeight());
     }
 
-    public CharacterState getState() {
+    public CharacterState getState()
+    {
         return state;
     }
 
-    public void setState(CharacterState newState) {
+    public void setState(CharacterState newState)
+    {
         if (state != newState)
         {
             state = newState;
@@ -138,13 +167,15 @@ public abstract class Creature extends Actor implements Json.Serializable
     }
 
     @Override
-    public void act(float delta) {
+    public void act(float delta)
+    {
         super.act(delta);
         setBox();
         stateTime += delta;
     }
 
-    protected TextureRegion getCurFrame() {
+    protected TextureRegion getCurFrame()
+    {
         Animation<TextureRegion> currentAnimation;
         switch (state)
         {
@@ -179,7 +210,8 @@ public abstract class Creature extends Actor implements Json.Serializable
         batch.begin();
     }
 
-    public void drawHealthBar(Batch batch) {
+    public void drawHealthBar(Batch batch)
+    {
 
         float HEALTH_BAR_WIDTH = getWidth();
         float HEALTH_BAR_HEIGHT = 8;
@@ -215,7 +247,7 @@ public abstract class Creature extends Actor implements Json.Serializable
             getScaleX(), getScaleY(),  // 缩放比例
             getRotation()              // 旋转角度
         );
-        drawRect(batch);
+//        drawRect(batch);
         drawHealthBar(batch);
     }
 }

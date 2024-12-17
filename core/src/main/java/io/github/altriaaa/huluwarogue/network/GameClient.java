@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
+import java.util.UUID;
 
 public class GameClient
 {
@@ -50,14 +51,15 @@ public class GameClient
 
     public void send(String message) throws IOException
     {
-        ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
+        String delimitedMessage = message + "\n";
+        ByteBuffer buffer = ByteBuffer.wrap(delimitedMessage.getBytes());
         socketChannel.write(buffer);
     }
 
     private void read(SelectionKey key) throws IOException
     {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = ByteBuffer.allocate(256);
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
         int bytesRead = socketChannel.read(buffer);
         if (bytesRead == -1)
         {

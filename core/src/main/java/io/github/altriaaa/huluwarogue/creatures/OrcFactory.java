@@ -17,17 +17,7 @@ public class OrcFactory implements CreatureFactory<Orc>
 
     public Orc create()
     {
-        ResourceManager manager = ResourceManager.getInstance();
-        // need one TextureRegion to determine width and height
-        TextureAtlas atlas = manager.getAtlas("orc_idle");
-        Array<TextureAtlas.AtlasRegion> regionArray = atlas.getRegions();
-        float width = regionArray.get(0).getRegionWidth();
-        float height = regionArray.get(0).getRegionHeight();
         Orc orc = new Orc();
-        orc.setSize(width, height);
-        orc.setOrigin(width/2,height/2);
-        orc.setScale(3.0f,3.0f);     // scale is determined by specific image, this is a magic number
-
         // Generate random position on the top, bottom, or right edge of the screen
         Random random = new Random();
         float worldWidth = GameWorld.getInstance().getStage().getWidth();
@@ -46,7 +36,6 @@ public class OrcFactory implements CreatureFactory<Orc>
                 orc.setPosition(worldWidth - orc.getWidth(), random.nextFloat() * (worldHeight - orc.getHeight()));
                 break;
         }
-
         return orc;
     }
 }

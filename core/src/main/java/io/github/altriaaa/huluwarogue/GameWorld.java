@@ -4,12 +4,16 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.altriaaa.huluwarogue.creatures.*;
 import io.github.altriaaa.huluwarogue.tiles.Obstacle;
 import io.github.altriaaa.huluwarogue.tiles.Square;
 
 import java.util.AbstractCollection;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 
 public class GameWorld
@@ -18,17 +22,14 @@ public class GameWorld
 
     public FitViewport viewport;
     Stage stage;
-    Knight knight;
+    Array<Knight> knights;
     Array<Orc> enemies;
     Array<Obstacle> obstacles;
 
-    private static final float FIXED_DELTA_TIME = 1 / 60f;
     float genEnemyTimer;
     float atkDtcTimer;
-    private boolean running;
 
     ResourceManager manager = ResourceManager.getInstance();
-
 
     private GameWorld()
     {
@@ -39,18 +40,59 @@ public class GameWorld
         return world;
     }
 
+    public void buildFromGameStat(GameStat gameStat)
+    {
+        setKnights(gameStat.knightsStat);
+        setEnemies(gameStat.enemiesStat);
+
+        // 更新其他全局状态（如时间、分数等）
+        // ...
+    }
+
+    public GameStat getGameStat()
+    {
+        return new GameStat(this.knights, this.enemies);
+    }
+
+
+//    public class GameStat implements Json.Serializable
+//    {
+//        public Knight knightStat;
+//        public Array<Orc> enemiesStat;
+//
+//        public GameStat()
+//        {
+//            knightStat = new Knight(); // 初始化为默认的 Knight 对象
+//            enemiesStat = new Array<>(); // 初始化为空的 Array
+//        }
+//
+//        @Override
+//        public void write(Json json)
+//        {
+//            json.writeValue("knightStat", knightStat);
+//            json.writeValue("enemiesStat", enemiesStat);
+//        }
+//
+//        @Override
+//        public void read(Json json, JsonValue jsonData)
+//        {
+//            knightStat = json.readValue("knightStat", Knight.class, jsonData);
+//            enemiesStat = json.readValue("enemiesStat", Array.class, Orc.class, jsonData);
+//        }
+//
+//    }
+
     public void worldInit()
     {
-        this.running = true;
         genEnemyTimer = 0;
         atkDtcTimer = 0;
+        knights = new Array<>();
         enemies = new Array<>();
         obstacles = new Array<>();
-        knight = (Knight) createCreature(new KnightFactory());
         viewport = new FitViewport(1260, 910);
         stage = new Stage(viewport);
         generateMap();
-        stage.addActor(knight);
+//        addKnight();
     }
 
     public void generateMap()
@@ -102,44 +144,156 @@ public class GameWorld
     public void createEnemy(float delta)
     {
         genEnemyTimer += delta;
-        if (genEnemyTimer > 100.0f)
+        if (genEnemyTimer > 15.0f)
         {
             genEnemyTimer = 0;
             Orc orc = (Orc) createCreature(new OrcFactory());
             enemies.add(orc);
             stage.addActor(orc);
+            orc.startBehavior();
         }
     }
 
-    public void setStage(Stage s)
-    {
-        Array<Actor> actors = this.stage.getActors();
-        for (int i = 0; i < actors.size; i++)
-        {
-            s.addActor(actors.get(i));
-        }
-        this.stage.dispose();
-        this.stage = s;
-    }
+//    public void setStage(Stage s)
+//    {
+//        Array<Actor> actors = this.stage.getActors();
+//        for (int i = 0; i < actors.size; i++)
+//        {
+//            s.addActor(actors.get(i));
+//        }
+//        this.stage.dispose();
+//        this.stage = s;
+//    }
 
     public Stage getStage()
     {
         return stage;
     }
 
-    public void setKnight(Knight knight)
+    public void addKnight(String id)
     {
-        knight.setSize(this.knight.getWidth(), this.knight.getHeight());
-        knight.setOrigin(this.knight.getOriginX(), this.knight.getOriginY());
-        knight.setScale(this.knight.getScaleX(), this.knight.getScaleY());
-        this.knight.remove();
-        this.knight = knight;
-        stage.addActor(this.knight);
+        Knight knight = (Knight) createCreature(new KnightFactory());
+        knight.setId(id);
+        knights.add(knight);
+        stage.addActor(knight);
     }
 
-    public Knight getKnight()
+    public void setKnights(Array<Knight> knights)
     {
-        return knight;
+//        this.knight.remove();
+//        this.knight = knight;
+//        stage.addActor(this.knight);
+        // 首先，遍历knights中的每个骑士
+        for (Knight newKnight : knights)
+        {
+            boolean found = false;
+            for (Knight oldKnight : this.knights)
+            {
+                if (Objects.equals(oldKnight.getId(), newKnight.getId()))
+                {
+                    oldKnight.updateStat(newKnight);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                this.knights.add(newKnight);
+                stage.addActor(newKnight);
+            }
+        }
+        Iterator<Knight> iterator = this.knights.iterator();
+        while (iterator.hasNext())
+        {
+            Knight oldKnight = iterator.next();
+            boolean foundInKnights = false;
+            for (Knight newKnight : knights)
+            {
+                if (Objects.equals(oldKnight.getId(), newKnight.getId()))
+                {
+                    foundInKnights = true;
+                    break; // 找到后跳出循环
+                }
+            }
+            if (!foundInKnights)
+            {
+                oldKnight.remove();
+                iterator.remove();
+            }
+        }
+    }
+
+    public Array<Knight> getKnights()
+    {
+        return knights;
+    }
+
+    public Knight getKnightById(String Id)
+    {
+        for (int i = knights.size - 1; i >= 0; i--)
+        {
+            if (Objects.equals(knights.get(i).getId(), Id))
+            {
+                return knights.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void removeKnightById(String Id)
+    {
+        Iterator<Knight> iterator = this.knights.iterator();
+        while (iterator.hasNext())
+        {
+            Knight knight = iterator.next();
+            if (Objects.equals(knight.getId(), Id))
+            {
+                knight.remove();
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    public void setEnemies(Array<Orc> enemies)
+    {
+        for (Orc newOrc : enemies)
+        {
+            boolean found = false;
+            for (Orc oldOrc : this.enemies)
+            {
+                if (Objects.equals(oldOrc.getId(), newOrc.getId()))
+                {
+                    oldOrc.updateStat(newOrc);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                this.enemies.add(newOrc);
+                stage.addActor(newOrc);
+            }
+        }
+        Iterator<Orc> iterator = this.enemies.iterator();
+        while (iterator.hasNext())
+        {
+            Orc oldOrc = iterator.next();
+            boolean foundInEnemies = false;
+            for (Orc newOrc : enemies)
+            {
+                if (Objects.equals(oldOrc.getId(), newOrc.getId()))
+                {
+                    foundInEnemies = true;
+                    break; // 找到后跳出循环
+                }
+            }
+            if (!foundInEnemies)
+            {
+                oldOrc.remove();
+                iterator.remove();
+            }
+        }
     }
 
     public Array<Orc> getEnemies()
@@ -161,11 +315,15 @@ public class GameWorld
             for (int i = enemies.size - 1; i >= 0; i--)
             {
                 Orc curEnemy = enemies.get(i);
-                if (knight.getState() == Creature.CharacterState.ATTACK && knight.isAttacking(curEnemy.getBoundingBox()))
+                for (int j = knights.size - 1; j >= 0; j--)
                 {
-                    curEnemy.vulDamage(knight.getDamage());
-                    if (curEnemy.getHealth() <= 0)
-                        enemies.removeIndex(i);
+                    Knight knight = knights.get(j);
+                    if (knight.getState() == Creature.CharacterState.ATTACK && knight.isAttacking(curEnemy.getBoundingBox()))
+                    {
+                        curEnemy.vulDamage(knight.getDamage());
+                        if (curEnemy.getHealth() <= 0)
+                            enemies.removeIndex(i);
+                    }
                 }
             }
         }
@@ -180,20 +338,10 @@ public class GameWorld
 
     public void clear()
     {
-        running = false;
         for (int i = enemies.size - 1; i >= 0; i--)
         {
             enemies.get(i).remove();
         }
         manager.dispose();
     }
-
-//    public static void main(String[] args)
-//    {
-//        GameWorld world = GameWorld.getInstance();
-//        world.assetInit();
-//        world.worldInit();
-//        world.run();
-//    }
-
 }

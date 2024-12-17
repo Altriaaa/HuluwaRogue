@@ -23,10 +23,16 @@ public class GameScreen implements Screen, GameClient.MessageListener
     final Main game;
     GameWorld world;
     private GameClient client;
+    private Control control;
 
     public GameScreen(final Main game) throws IOException
     {
         this.game = game;
+        control = new Control();
+
+        world = GameWorld.getInstance();
+        world.assetInit();
+        world.worldInit();
 
         client = new GameClient("localhost", 12345);
         client.setMessageListener(this);
@@ -43,10 +49,6 @@ public class GameScreen implements Screen, GameClient.MessageListener
         });
         clientThread.setDaemon(true); // 设置为守护线程，以便在应用退出时自动关闭
         clientThread.start();
-
-        world = GameWorld.getInstance();
-        world.assetInit();
-        world.worldInit();
 //        world.run();
     }
 
@@ -57,8 +59,8 @@ public class GameScreen implements Screen, GameClient.MessageListener
         {
 //            System.out.println("Message from server: " + message);
             Json json = new Json();
-            Knight knight = json.fromJson(Knight.class, message);
-            world.setKnight(knight);
+            GameStat gameStat = json.fromJson(GameStat.class, message);
+            world.buildFromGameStat(gameStat);
         });
     }
 
@@ -80,6 +82,16 @@ public class GameScreen implements Screen, GameClient.MessageListener
         ScreenUtils.clear(Color.BLACK);
 //        world.update(delta);
 //        System.out.println(world.getKnight().getState());
+        control.set();
+        Json json = new Json();
+        String jsonData = json.toJson(control);
+        try
+        {
+            client.send(jsonData);
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
         world.getStage().draw();
     }
 
