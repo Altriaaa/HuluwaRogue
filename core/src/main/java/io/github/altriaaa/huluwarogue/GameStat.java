@@ -20,6 +20,5 @@ public class GameStat
     {
         knightsStat = k;
         enemiesStat = e;
-//        enemiesStat = new Array<>();
     }
 }

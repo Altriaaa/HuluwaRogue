@@ -50,7 +50,7 @@ public class Obstacle extends Tile
             getScaleX(), getScaleY(),  // 缩放比例
             getRotation()              // 旋转角度
         );
-        drawRect(batch);
+//        drawRect(batch);
     }
 
 }

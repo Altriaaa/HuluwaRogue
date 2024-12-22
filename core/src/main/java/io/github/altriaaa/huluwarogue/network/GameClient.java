@@ -59,7 +59,7 @@ public class GameClient
     private void read(SelectionKey key) throws IOException
     {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        ByteBuffer buffer = ByteBuffer.allocate(4096);
         int bytesRead = socketChannel.read(buffer);
         if (bytesRead == -1)
         {

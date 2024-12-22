@@ -2,34 +2,44 @@ package io.github.altriaaa.huluwarogue;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.StringBuilder;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.altriaaa.huluwarogue.creatures.*;
+import io.github.altriaaa.huluwarogue.network.GameStatMessage;
 import io.github.altriaaa.huluwarogue.tiles.Obstacle;
 import io.github.altriaaa.huluwarogue.tiles.Square;
 
-import java.util.AbstractCollection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Random;
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.util.*;
 
 public class GameWorld
 {
     private static final GameWorld world = new GameWorld();
 
     public FitViewport viewport;
+    public boolean showBox;
+    private boolean isPaused;
     Stage stage;
+    Group characterGroup;
+    Group mapGroup;
     Array<Knight> knights;
     Array<Orc> enemies;
     Array<Obstacle> obstacles;
+    int xNum;
+    int yNum;
+    int[][] map;
 
     float genEnemyTimer;
     float atkDtcTimer;
 
     ResourceManager manager = ResourceManager.getInstance();
+    private static final String SAVE_FILE_PATH = "saves/save.json";
+    private static final String MAP_FILE_PATH = "saves/map.json";
 
     private GameWorld()
     {
@@ -54,36 +64,62 @@ public class GameWorld
         return new GameStat(this.knights, this.enemies);
     }
 
+    public void save()
+    {
+        Json json = new Json();
+        String gameStat = json.toJson(this.getGameStat());
+        String mapStat = json.toJson(this.getMap());
+//        File saveDir = new File("saves");
+//        if (!saveDir.exists())
+//        {
+//            saveDir.mkdirs(); // 创建目录
+//        }
+        try (FileWriter gameWriter = new FileWriter(SAVE_FILE_PATH); FileWriter mapWriter = new FileWriter(MAP_FILE_PATH))
+        {
+            gameWriter.write(gameStat);
+            mapWriter.write(mapStat);
+            System.out.println("Game saved");
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
-//    public class GameStat implements Json.Serializable
-//    {
-//        public Knight knightStat;
-//        public Array<Orc> enemiesStat;
-//
-//        public GameStat()
-//        {
-//            knightStat = new Knight(); // 初始化为默认的 Knight 对象
-//            enemiesStat = new Array<>(); // 初始化为空的 Array
-//        }
-//
-//        @Override
-//        public void write(Json json)
-//        {
-//            json.writeValue("knightStat", knightStat);
-//            json.writeValue("enemiesStat", enemiesStat);
-//        }
-//
-//        @Override
-//        public void read(Json json, JsonValue jsonData)
-//        {
-//            knightStat = json.readValue("knightStat", Knight.class, jsonData);
-//            enemiesStat = json.readValue("enemiesStat", Array.class, Orc.class, jsonData);
-//        }
-//
-//    }
+    public void load()
+    {
+        Json json = new Json();
+        try (BufferedReader gameReader = new BufferedReader(new FileReader(SAVE_FILE_PATH));
+             BufferedReader mapReader = new BufferedReader(new FileReader(MAP_FILE_PATH)))
+        {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = gameReader.readLine()) != null)
+            {
+                sb.append(line);
+            }
+            GameStat gameStat = json.fromJson(GameStat.class, sb.toString());
+            sb.clear();
+            while ((line = mapReader.readLine()) != null)
+            {
+                sb.append(line);
+            }
+            int[][] map = json.fromJson(int[][].class, sb.toString());
+            this.refreshMap(map);
+            this.buildFromGameStat(gameStat);
+            for(int i = enemies.size-1; i >= 0; i--)
+            {
+                enemies.get(i).startBehavior();
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     public void worldInit()
     {
+        showBox = false;
+        isPaused = false;
         genEnemyTimer = 0;
         atkDtcTimer = 0;
         knights = new Array<>();
@@ -91,35 +127,86 @@ public class GameWorld
         obstacles = new Array<>();
         viewport = new FitViewport(1260, 910);
         stage = new Stage(viewport);
+        characterGroup = new Group();
+        mapGroup = new Group();
+        stage.addActor(mapGroup);
+        stage.addActor(characterGroup);
+        setWorldScale();
+        map = new int[xNum][yNum];
         generateMap();
-//        addKnight();
+        refreshMap(map);
     }
 
-    public void generateMap()
+    public void pause()
+    {
+        isPaused = true;
+    }
+
+    public void resume()
+    {
+        isPaused = false;
+    }
+
+    public boolean isPaused()
+    {
+        return isPaused;
+    }
+
+    public void setWorldScale()
     {
         float worldWidth = stage.getWidth();
         float worldHeight = stage.getHeight();
         float tileWidth = new Square().getWidth();
         float tileHeight = new Square().getHeight();
-        int xNum = (int) (worldWidth / tileWidth);
-        int yNum = (int) (worldHeight / tileHeight);
+        xNum = (int) (worldWidth / tileWidth);
+        yNum = (int) (worldHeight / tileHeight);
+    }
+
+    public void generateMap()
+    {
         Random random = new Random();
         for (int i = 0; i < xNum; i++)
         {
             for (int j = 0; j < yNum; j++)
             {
-                if (random.nextFloat() < 0.1)
+                if (random.nextFloat() < 0.1 && i != 0)
+                {
+                    map[i][j] = 0;
+                }
+                else
+                {
+                    map[i][j] = 1;
+                }
+            }
+        }
+    }
+
+    public void refreshMap(int[][] map)
+    {
+        this.map = map;
+        float tileWidth = new Square().getWidth();
+        float tileHeight = new Square().getHeight();
+        for (int i = 0; i < xNum; i++)
+        {
+            for (int j = 0; j < yNum; j++)
+            {
+                if (map[i][j] == 0)
                 {
                     Obstacle obstacle = new Obstacle(i * tileWidth, j * tileHeight);
-                    stage.addActor(obstacle);
+                    mapGroup.addActor(obstacle);
                     obstacles.add(obstacle);
                 }
                 else
                 {
-                    stage.addActor(new Square(i * tileWidth, j * tileHeight));
+                    mapGroup.addActor(new Square(i * tileWidth, j * tileHeight));
                 }
             }
         }
+    }
+
+    public int[][] getMap()
+    {
+        return map;
     }
 
     public void assetInit()
@@ -144,12 +231,12 @@ public class GameWorld
     public void createEnemy(float delta)
     {
         genEnemyTimer += delta;
-        if (genEnemyTimer > 15.0f)
+        if (genEnemyTimer > 15.0f && enemies.size < 9)
         {
             genEnemyTimer = 0;
             Orc orc = (Orc) createCreature(new OrcFactory());
             enemies.add(orc);
-            stage.addActor(orc);
+            characterGroup.addActor(orc);
             orc.startBehavior();
         }
     }
@@ -175,14 +262,11 @@ public class GameWorld
         Knight knight = (Knight) createCreature(new KnightFactory());
         knight.setId(id);
         knights.add(knight);
-        stage.addActor(knight);
+        characterGroup.addActor(knight);
     }
 
-    public void setKnights(Array<Knight> knights)
+    public synchronized void setKnights(Array<Knight> knights)
     {
-//        this.knight.remove();
-//        this.knight = knight;
-//        stage.addActor(this.knight);
         // 首先，遍历knights中的每个骑士
         for (Knight newKnight : knights)
         {
@@ -199,7 +283,7 @@ public class GameWorld
             if (!found)
             {
                 this.knights.add(newKnight);
-                stage.addActor(newKnight);
+                characterGroup.addActor(newKnight);
             }
         }
         Iterator<Knight> iterator = this.knights.iterator();
@@ -223,7 +307,7 @@ public class GameWorld
         }
     }
 
-    public Array<Knight> getKnights()
+    public synchronized Array<Knight> getKnights()
     {
         return knights;
     }
@@ -255,7 +339,7 @@ public class GameWorld
         }
     }
 
-    public void setEnemies(Array<Orc> enemies)
+    public synchronized void setEnemies(Array<Orc> enemies)
     {
         for (Orc newOrc : enemies)
         {
@@ -272,7 +356,8 @@ public class GameWorld
             if (!found)
             {
                 this.enemies.add(newOrc);
-                stage.addActor(newOrc);
+                characterGroup.addActor(newOrc);
+//                newOrc.startBehavior();
             }
         }
         Iterator<Orc> iterator = this.enemies.iterator();
@@ -296,17 +381,27 @@ public class GameWorld
         }
     }
 
-    public Array<Orc> getEnemies()
+    public synchronized Array<Orc> getEnemies()
     {
         return enemies;
     }
 
-    public Array<Obstacle> getObstacles()
+    public synchronized Array<Obstacle> getObstacles()
     {
         return obstacles;
     }
 
-    public void atkDetect(float delta)
+    public void changeBoxShow()
+    {
+        this.showBox = !this.showBox;
+    }
+
+    public boolean getShowBox()
+    {
+        return showBox;
+    }
+
+    public synchronized void atkDetect(float delta)
     {
         atkDtcTimer += delta;
         if (atkDtcTimer > 0.3f)
@@ -324,6 +419,12 @@ public class GameWorld
                         if (curEnemy.getHealth() <= 0)
                             enemies.removeIndex(i);
                     }
+                    if (curEnemy.getState() == Creature.CharacterState.ATTACK && curEnemy.isAttacking(knight.getBoundingBox()))
+                    {
+                        knight.vulDamage(curEnemy.getDamage());
+                        if (knight.getHealth() <= 0)
+                            knights.removeIndex(j);
+                    }
                 }
             }
         }
@@ -331,6 +432,10 @@ public class GameWorld
 
     public void update(float delta)
     {
+        if (isPaused)
+        {
+            return;
+        }
         createEnemy(delta);
         atkDetect(delta);
         stage.act(delta);
@@ -338,10 +443,20 @@ public class GameWorld
 
     public void clear()
     {
-        for (int i = enemies.size - 1; i >= 0; i--)
-        {
-            enemies.get(i).remove();
-        }
+//        for (int i = enemies.size - 1; i >= 0; i--)
+//        {
+//            enemies.get(i).vulDamage(enemies.get(i).getHealth());
+//            enemies.get(i).remove();
+//        }
+//        for (int i = knights.size - 1; i >= 0; i--)
+//        {
+//            knights.get(i).vulDamage(knights.get(i).getHealth());
+//            knights.get(i).remove();
+//        }
+        Orc.shutdownGlobalExecutorService();
+        Timer.instance().clear();
+        if (stage != null) stage.dispose();
         manager.dispose();
+        this.pause();
     }
 }

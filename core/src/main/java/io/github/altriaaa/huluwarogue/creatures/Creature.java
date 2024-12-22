@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
+import io.github.altriaaa.huluwarogue.GameWorld;
 
 import java.util.UUID;
 
@@ -49,7 +50,6 @@ public abstract class Creature extends Actor implements Json.Serializable
         WALKING,
         DYING,
         ATTACK,
-        FAR_ATTACK
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class Creature extends Actor implements Json.Serializable
         return damage;
     }
 
-    public void vulDamage(float d)
+    public synchronized void vulDamage(float d)
     {
         health -= d;
         if (health <= 0)
@@ -125,7 +125,7 @@ public abstract class Creature extends Actor implements Json.Serializable
         }
     }
 
-    public float getHealth()
+    public synchronized float getHealth()
     {
         return health;
     }
@@ -151,8 +151,7 @@ public abstract class Creature extends Actor implements Json.Serializable
         if (state != newState)
         {
             state = newState;
-            stateTime = 0f; // Reset animation time on state change
-//            System.out.println(state);
+            stateTime = 0f;
         }
     }
 
@@ -247,7 +246,8 @@ public abstract class Creature extends Actor implements Json.Serializable
             getScaleX(), getScaleY(),  // 缩放比例
             getRotation()              // 旋转角度
         );
-//        drawRect(batch);
+        if(GameWorld.getInstance().getShowBox())
+            drawRect(batch);
         drawHealthBar(batch);
     }
 }

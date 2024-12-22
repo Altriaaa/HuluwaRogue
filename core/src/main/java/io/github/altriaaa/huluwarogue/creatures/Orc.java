@@ -26,7 +26,11 @@ public class Orc extends Creature
 {
     private float targetX;
     private float targetY;
-    private ExecutorService executorService; // 线程池，用于管理每个 Orc 的线程
+    private float targetD;
+    //    private ExecutorService executorService; // 线程池，用于管理每个 Orc 的线程
+    private static final ExecutorService globalExecutorService = Executors.newCachedThreadPool();
+    private boolean isStarted;
+
 
     public Orc()
     {
@@ -43,7 +47,9 @@ public class Orc extends Creature
         speed = 64;
         targetX = 0;
         targetY = 0;
-        executorService = Executors.newSingleThreadExecutor();
+        targetD = 10000;
+        isStarted = false;
+//        executorService = Executors.newSingleThreadExecutor();
 
         TextureAtlas atlas = resourceManager.getAtlas("orc_idle");
         Array<TextureAtlas.AtlasRegion> regionArray = atlas.getRegions();
@@ -53,60 +59,78 @@ public class Orc extends Creature
         setSize(width, height);
         setOrigin(width / 2, height / 2);
         setScale(3.0f, 3.0f);
-//        startBehavior();
     }
 
     @Override
     public void write(Json json)
     {
         super.write(json);
-//        json.writeValue("targetX", targetX);
-//        json.writeValue("targetY", targetY);
-//        json.writeValue("executorService", executorService);
     }
 
     @Override
     public void read(Json json, JsonValue jsonData)
     {
         super.read(json, jsonData);
-//        targetX = json.readValue("targetX", Float.class, jsonData);
-//        targetY = json.readValue("targetY", Float.class, jsonData);
     }
 
-//    @Override
-//    public void vulDamage(float d)
-//    {
-//        health -= d;
-//        if (health <= 0)
-//        {
-//            setState(CharacterState.DYING);
-//            Timer.schedule(new Timer.Task()
-//            {
-//                @Override
-//                public void run()
-//                {
-//                    remove();
-//                }
-//            }, deathAnimation.getAnimationDuration());
-//        }
-//    }
+    public static void shutdownGlobalExecutorService()
+    {
+        globalExecutorService.shutdownNow();
+    }
 
     public void startBehavior()
     {
-        executorService.submit(() ->
+        if(isStarted) return;
+        isStarted = true;
+        globalExecutorService.submit(() ->
         {
-            while (health > 0)
+            while (health > 0 && this.state != null)
             {
                 try
                 {
+//                    System.out.println("orc acting");
                     Array<Knight> knights = GameWorld.getInstance().getKnights();
-                    float newX = knights.size == 0 ? 0 : knights.get(0).getX();
-                    float newY = knights.size == 0 ? 0 : knights.get(0).getY();
+                    float distance = 10000;
+                    float newX = 0;
+                    float newY = 0;
+                    CharacterState newState = CharacterState.IDLE;
+                    for (int i = knights.size - 1; i >= 0; i--)
+                    {
+                        Knight knight = knights.get(i);
+                        float deltaX = (knight.getX()) - getX();
+                        float deltaY = (knight.getY()) - getY();
+                        float new_distance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        if (distance > new_distance)
+                        {
+                            distance = new_distance;
+                            newX = knight.getX();
+                            newY = knight.getY();
+                        }
+                        if (distance < 100)
+                        {
+                            newState = CharacterState.ATTACK;
+                        }
+                        else
+                        {
+                            newState = CharacterState.WALKING;
+                        }
+
+                    }
+
                     // 将计算结果提交到主线程更新
+                    float finalNewX = newX;
+                    float finalNewY = newY;
+                    CharacterState finalNewState = newState;
+                    float finalDistance = distance;
                     Gdx.app.postRunnable(() ->
                     {
-                        targetX = newX;
-                        targetY = newY;
+                        synchronized (this)
+                        {
+                            targetX = finalNewX;
+                            targetY = finalNewY;
+                            targetD = finalDistance;
+                            setState(finalNewState);
+                        }
                     });
                     Thread.sleep(1000);
                 } catch (InterruptedException e)
@@ -130,40 +154,23 @@ public class Orc extends Creature
     {
         super.act(delta);
         if (state == CharacterState.DYING) return;
-        // 在主线程中处理移动逻辑
-        if (targetX != getX() || targetY != getY())
+        if (state == CharacterState.WALKING)
         {
-            float deltaX = targetX - getX();
-            float deltaY = targetY - getY();
-            float distance = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-            if (distance > speed * delta)
+            if (targetX != getX() || targetY != getY())
             {
-                float ratio = speed * delta / distance;
-                moveBy(deltaX * ratio, deltaY * ratio);
-            }
-            else
-            {
-                setPosition(targetX, targetY);
+                float deltaX = targetX - getX();
+                float deltaY = targetY - getY();
+                if (targetD > speed * delta)
+                {
+                    float ratio = speed * delta / targetD;
+                    moveBy(deltaX * ratio, deltaY * ratio);
+                }
+                else
+                {
+                    setPosition(targetX, targetY);
+                }
             }
         }
-//        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-//            setState(CharacterState.WALKING);
-//            move(6); // 右移
-//        } else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-//            setState(CharacterState.WALKING);
-//            move(4); // 左移
-//        } else if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-//            setState(CharacterState.WALKING);
-//            move(8); // 上移
-//        } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-//            setState(CharacterState.WALKING);
-//            move(2); // 下移
-//        } else if (Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
-//            setState(CharacterState.ATTACK);
-//        } else {
-//            setState(CharacterState.IDLE);
-//        }
     }
 
     @Override
@@ -178,17 +185,14 @@ public class Orc extends Creature
             getScaleX(), getScaleY(),
             getRotation()
         );
-        drawRect(batch);
+        if(GameWorld.getInstance().getShowBox())
+            drawRect(batch);
         drawHealthBar(batch);
     }
 
     @Override
     public boolean remove()
     {
-        if (executorService != null && !executorService.isShutdown())
-        {
-            executorService.shutdownNow();
-        }
         return super.remove();
     }
 }
