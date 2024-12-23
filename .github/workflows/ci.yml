@@ -29,9 +29,9 @@ jobs:
 
       - name: Start Xvfb
         run: |
-          Xvfb :99-ac2>/dev/null
+          Xvfb :99 -ac
           export DISPLAY=:99
-          xhost + &
+#          xhost + &
           sleep 3 # 等待 Xvfb 启动
           echo $DISPLAY
           ps -ef|grep Xvfb
