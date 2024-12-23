@@ -22,7 +22,6 @@ public class TestApplication extends ApplicationAdapter
 //            GameWorld.getInstance().load();
         } finally
         {
-            // 测试完成后退出
             Gdx.app.exit();
         }
     }
