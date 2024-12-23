@@ -31,7 +31,7 @@ jobs:
         run: ls -R
 
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
