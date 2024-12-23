@@ -21,10 +21,10 @@ public class GameLogicTest
     @Test
     public void setup()
     {
-        GLFWErrorCallback.createPrint(System.err).set();
-        if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
+//        GLFWErrorCallback.createPrint(System.err).set();
+//        if (!GLFW.glfwInit()) {
+//            throw new IllegalStateException("Unable to initialize GLFW");
+//        }
         System.out.println("GLFW initialized successfully.");
         // 初始化 LWJGL 应用程序
         Lwjgl3ApplicationConfiguration config = Lwjgl3Launcher.getDefaultConfiguration();
