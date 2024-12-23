@@ -8,9 +8,6 @@ import io.github.altriaaa.huluwarogue.lwjgl3.Lwjgl3Launcher;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 public class GameLogicTest
 {
@@ -30,20 +27,6 @@ public class GameLogicTest
 
 //        System.out.println("dsa");
     }
-
-//    @Test
-//    public void testCollisionDetection()
-//    {
-//        Orc orc = new Orc();
-//        Knight knight = new Knight();
-//
-//        orc.setPosition(0, 0);
-//        knight.setPosition(0, 0);
-//
-//        boolean collision = orc.isAttacking(knight.getBoundingBox());
-//        assertTrue(collision, "Orc should collide with Knight.");
-////        assertTrue(true, "Orc should collide with Knight.");
-//    }
 }
 
 
