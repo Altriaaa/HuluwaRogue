@@ -32,11 +32,14 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 &
           export DISPLAY=:99
 
+      - name: Enable debug mode
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
+
       - name: Debug file system
         run: ls -R
 
       - name: Build and run tests
-        run: ./gradlew lwjgl3:test
+        run: ./gradlew lwjgl3:test --info --stacktrace
 
       - name: Generate Coverage Report
         run: ./gradlew jacocoTestReport
@@ -44,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: desktop/build/reports/jacoco/test/html
+          path: build/reports/jacoco/test/html
