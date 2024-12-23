@@ -54,9 +54,6 @@ public class GameWorld
     {
         setKnights(gameStat.knightsStat);
         setEnemies(gameStat.enemiesStat);
-
-        // 更新其他全局状态（如时间、分数等）
-        // ...
     }
 
     public GameStat getGameStat()

@@ -1,4 +1,4 @@
-name: Java CI with OpenGL
+name: Build and Deploy
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,27 +27,14 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install -y libxrender1 libxtst6 libxi6 libgl1-mesa-dev libglu1-mesa xvfb
 
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 -screen 0 1024x768x24 &
-          export DISPLAY=:99
-          sleep 3
-          echo $DISPLAY
-          ps -ef|grep Xvfb
-
-      - name: Enable debug mode
-        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
-
       - name: Debug file system
         run: ls -R
 
-      - name: Build and run tests
-        run: ./gradlew lwjgl3:test --info --stacktrace
+      - name: Build
+        run: ./gradlew build
 
-      - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
-      - name: Upload Coverage Report
+      - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-report
-          path: build/reports/jacoco/test/html
+          name: build-artifacts
+          path: build/libs/
