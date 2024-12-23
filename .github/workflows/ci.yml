@@ -1,0 +1,41 @@
+name: Java CI with OpenGL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: sudo apt-get install -y libxrender1 libxtst6 libxi6 xvfb
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          export DISPLAY=:99
+
+      - name: Build and run tests
+        run: ./gradlew lwjgl3:test
+
+      - name: Generate Coverage Report
+        run: ./gradlew jacocoTestReport
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: desktop/build/reports/jacoco/test/html
