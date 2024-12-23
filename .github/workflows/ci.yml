@@ -25,14 +25,16 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Install dependencies
-        run: sudo apt-get install -y libxrender1 libxtst6 libxi6 libgl1-mesa-dev xvfb
+        run: sudo apt-get install -y libxrender1 libxtst6 libxi6 libgl1-mesa-dev libglu1-mesa xvfb
 
       - name: Start Xvfb
         run: |
-          Xvfb :99 -screen 0 1024x768x24 &
+          Xvfb :99-ac2>/dev/null
           export DISPLAY=:99
+          xhost + &
           sleep 3 # 等待 Xvfb 启动
           echo $DISPLAY
+          ps -ef|grep Xvfb
 #          dbinfo -display :99
 
       - name: Enable debug mode
