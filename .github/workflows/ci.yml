@@ -33,7 +33,7 @@ jobs:
           export DISPLAY=:99
           sleep 3 # 等待 Xvfb 启动
           echo $DISPLAY
-          dbinfo -display :99
+#          dbinfo -display :99
 
       - name: Enable debug mode
         run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
