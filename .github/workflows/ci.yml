@@ -21,6 +21,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Set execute permission for gradlew
+        run: chmod +x ./gradlew
+
       - name: Install dependencies
         run: sudo apt-get install -y libxrender1 libxtst6 libxi6 xvfb
 
