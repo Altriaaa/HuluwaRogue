@@ -66,11 +66,11 @@ public class GameWorld
         Json json = new Json();
         String gameStat = json.toJson(this.getGameStat());
         String mapStat = json.toJson(this.getMap());
-//        File saveDir = new File("saves");
-//        if (!saveDir.exists())
-//        {
-//            saveDir.mkdirs(); // 创建目录
-//        }
+        File saveDir = new File("saves");
+        if (!saveDir.exists())
+        {
+            saveDir.mkdirs(); // 创建目录
+        }
         try (FileWriter gameWriter = new FileWriter(SAVE_FILE_PATH); FileWriter mapWriter = new FileWriter(MAP_FILE_PATH))
         {
             gameWriter.write(gameStat);
@@ -220,7 +220,7 @@ public class GameWorld
         manager.loadAtlas("orc_death", "Enemy/Orc/Death.atlas");
     }
 
-    <T extends Creature> Creature createCreature(CreatureFactory<T> factory)
+    public <T extends Creature> Creature createCreature(CreatureFactory<T> factory)
     {
         return factory.create();
     }
@@ -386,11 +386,6 @@ public class GameWorld
     public synchronized Array<Obstacle> getObstacles()
     {
         return obstacles;
-    }
-
-    public void changeBoxShow()
-    {
-        this.showBox = !this.showBox;
     }
 
     public boolean getShowBox()
