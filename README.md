@@ -2,6 +2,8 @@
 
 这是一个roguelike风格的对战小游戏，支持网络多人联机。
 
+详细技术细节请见仓库中的技术报告：Developing a Java Game from Scratch
+
 演示视频：
 
 - 保存、加载和录像：https://www.bilibili.com/video/BV15iCKYREEG
